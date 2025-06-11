@@ -5,13 +5,13 @@ from scraper import scrape_mercado_livre
 app = FastAPI()
 
 # 1️⃣ Rota da API de scraping
-:contentReference[oaicite:1]{index=1}
-:contentReference[oaicite:2]{index=2}
+@app.get("/scrape/")
+def scrape_product(url: str):
     try:
-        :contentReference[oaicite:3]{index=3}
-    :contentReference[oaicite:4]{index=4}
-        :contentReference[oaicite:5]{index=5}
+        return scrape_mercado_livre(url)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # 2️⃣ Monta os arquivos estáticos somente após definir as rotas
-:contentReference[oaicite:6]{index=6}
+app.mount("/", StaticFiles(directory="public", html=True), name="static")
 
