@@ -3,34 +3,30 @@ from bs4 import BeautifulSoup
 import re
 from datetime import datetime
 
-def scrape_mercado_livre(url):
-    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
-    soup = BeautifulSoup(response.text, 'html.parser')
+def extrair_dados_produto(url):
+    headers = {"User-Agent": "Mozilla/5.0"}
+    resposta = requests.get(url, headers=headers)
+    if resposta.status_code != 200:
+        return {"Erro": f"Erro ao acessar a página: {resposta.status_code}"}
 
-    # ————————————— Dados principais —————————————
-    # Título do produto
-    titulo_tag = soup.find('h1')
-    titulo = titulo_tag.text.strip() if titulo_tag else "N/A"
+    soup = BeautifulSoup(resposta.text, 'html.parser')
 
-    # Preço
-    preco_tag = soup.find('span', class_='price-tag-fraction')
-    preco = preco_tag.text.strip() if preco_tag else "N/A"
+    titulo_tag = soup.find("h1", class_="ui-pdp-title")
+    titulo = titulo_tag.text.strip() if titulo_tag else "Não encontrado"
 
-    # Vendas
-    vendidos_tag = soup.find('span', class_='ui-pdp-subtitle__sold-quantity')
-    vendidos_match = re.search(r'(\d+)', vendidos_tag.text) if vendidos_tag else None
-    vendidos = vendidos_match.group(1) if vendidos_match else "N/A"
+    meta_price_tag = soup.find("meta", itemprop="price")
+    preco = f'R${meta_price_tag["content"]}' if meta_price_tag else "Não encontrado"
 
-    # ————————————— Extract & format startTime —————————————
+    vendidos_tag = soup.find("span", string=lambda s: s and "vendido" in s.lower())
+    vendidos = vendidos_tag.text.strip() if vendidos_tag else "Não encontrado"
+
     starttime = "Não encontrado"
-    script_text = response.text
-    starttime_match = re.search(r'"startTime"\s*:\s*"([^"]+)"', script_text)
+    starttime_match = re.search(r'"startTime"\s*:\s*"([^"]+)"', resposta.text)
     if starttime_match:
         raw_date = starttime_match.group(1)
         try:
-            # Parse string como ISO-8601 com 'Z' de UTC
-            date_obj = datetime.strptime(raw_date, "%Y-%m-%dT%H:%M:%SZ")
-            starttime = date_obj.strftime("%d/%m/%y")
+            data_obj = datetime.strptime(raw_date, "%Y-%m-%dT%H:%M:%SZ")
+            starttime = data_obj.strftime("%d/%m/%y")
         except ValueError:
             starttime = raw_date
 
@@ -38,5 +34,5 @@ def scrape_mercado_livre(url):
         "Título": titulo,
         "Preço": preco,
         "Vendidos": vendidos,
-        "Data de início (dd/mm/aa)": starttime
+        "DataInicio": starttime  # ajuste de key mais amigável para JS
     }
