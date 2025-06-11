@@ -1,42 +1,42 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-import json
+from datetime import datetime
 
 def scrape_mercado_livre(url):
-    headers = {'User-Agent': 'Mozilla/5.0'}
-    resp = requests.get(url, headers=headers)
-    soup = BeautifulSoup(resp.text, 'html.parser')
+    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+    soup = BeautifulSoup(response.text, 'html.parser')
 
-    # Price, stock, sales...
-    price_tag = soup.find('span', class_='price-tag-fraction')
-    price = price_tag.text.strip() if price_tag else 'N/A'
+    # ————————————— Dados principais —————————————
+    # Título do produto
+    titulo_tag = soup.find('h1')
+    titulo = titulo_tag.text.strip() if titulo_tag else "N/A"
 
-    stock_tag = soup.find('p', class_='ui-pdp-quantity__available')
-    stock = stock_tag.text.strip() if stock_tag else 'N/A'
+    # Preço
+    preco_tag = soup.find('span', class_='price-tag-fraction')
+    preco = preco_tag.text.strip() if preco_tag else "N/A"
 
-    sales_tag = soup.find('span', class_='ui-pdp-subtitle__sold-quantity')
-    sales = re.search(r'(\d+)', sales_tag.text).group(1) if sales_tag else 'N/A'
+    # Vendas
+    vendidos_tag = soup.find('span', class_='ui-pdp-subtitle__sold-quantity')
+    vendidos_match = re.search(r'(\d+)', vendidos_tag.text) if vendidos_tag else None
+    vendidos = vendidos_match.group(1) if vendidos_match else "N/A"
 
-    start_time = 'N/A'
-    # 🧠 Procura por JSON que contenha "startTime"
-    scripts = soup.find_all('script')
-    for script in scripts:
-        if 'startTime' in script.text:
-            # Extrai JSON com regex
-            m = re.search(r'\{.*"startTime":".*?".*\}', script.text, re.S)
-            if m:
-                try:
-                    data = json.loads(m.group(0))
-                    start_time = data.get('startTime', 'N/A')
-                    break
-                except json.JSONDecodeError:
-                    pass
+    # ————————————— Extract & format startTime —————————————
+    starttime = "Não encontrado"
+    script_text = response.text
+    starttime_match = re.search(r'"startTime"\s*:\s*"([^"]+)"', script_text)
+    if starttime_match:
+        raw_date = starttime_match.group(1)
+        try:
+            # Parse string como ISO-8601 com 'Z' de UTC
+            date_obj = datetime.strptime(raw_date, "%Y-%m-%dT%H:%M:%SZ")
+            starttime = date_obj.strftime("%d/%m/%y")
+        except ValueError:
+            starttime = raw_date
 
     return {
-        'price': price,
-        'stock': stock,
-        'sales': sales,
-        'start_time': start_time
+        "Título": titulo,
+        "Preço": preco,
+        "Vendidos": vendidos,
+        "Data de início (dd/mm/aa)": starttime
     }
-
