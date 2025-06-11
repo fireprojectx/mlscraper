@@ -1,17 +1,15 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from scraper import scrape_mercado_livre
+from scraper import extrair_dados_produto
 
 app = FastAPI()
 
-# 1️⃣ Rota da API de scraping
 @app.get("/scrape/")
 def scrape_product(url: str):
     try:
-        return scrape_mercado_livre(url)
+        return extrair_dados_produto(url)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# 2️⃣ Monta os arquivos estáticos somente após definir as rotas
+# Serve frontend
 app.mount("/", StaticFiles(directory="public", html=True), name="static")
-
