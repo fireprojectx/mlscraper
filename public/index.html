@@ -1,28 +1,48 @@
-<script>
-  async function consultar() {
-    const link = document.getElementById("linkInput").value;
-    const resultado = document.getElementById("resultado");
-    resultado.innerHTML = "Consultando...";
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta Mercado Livre</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        input { width: 100%; padding: 8px; margin-bottom: 10px; }
+        button { padding: 10px 20px; }
+        #resultado div { margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <h1>Consultar Produto do Mercado Livre</h1>
+    <input type="text" id="linkInput" placeholder="Cole o link do produto aqui" />
+    <button onclick="consultar()">Consultar</button>
+    <div id="resultado"></div>
 
-    try {
-      const res = await fetch(`/scrape/?url=${encodeURIComponent(link)}`);
-      if (!res.ok) throw new Error(`Erro ${res.status}`);
-      const data = await res.json();
+    <script>
+        async function consultar() {
+            const link = document.getElementById("linkInput").value;
+            const resultado = document.getElementById("resultado");
+            resultado.innerHTML = "Consultando...";
 
-      if (data.Erro) {
-        resultado.innerHTML = `<span class="text-red-600">${data.Erro}</span>`;
-        return;
-      }
+            try {
+                const res = await fetch(`/scrape/?url=${encodeURIComponent(link)}`);
+                if (!res.ok) throw new Error(`Erro ${res.status}`);
+                const data = await res.json();
 
-      resultado.innerHTML = `
-        <div><strong>Título:</strong> ${data.Título || "N/A"}</div>
-        <div><strong>Preço:</strong> ${data.Preço || "N/A"}</div>
-        <div><strong>Vendidos:</strong> ${data.Vendidos || "N/A"}</div>
-        <div><strong>Data do Anúncio:</strong> ${data.DataInicio || "N/A"}</div>
-      `;
-    } catch (err) {
-      console.error(err);
-      resultado.innerHTML = `<span class="text-red-600">Erro: ${err.message}</span>`;
-    }
-  }
-</script>
+                if (data.Erro) {
+                    resultado.innerHTML = `<span style="color:red;">${data.Erro}</span>`;
+                    return;
+                }
+
+                resultado.innerHTML = `
+                    <div><strong>Título:</strong> ${data.Título || "N/A"}</div>
+                    <div><strong>Preço:</strong> ${data.Preço || "N/A"}</div>
+                    <div><strong>Vendidos:</strong> ${data.Vendidos || "N/A"}</div>
+                    <div><strong>Data do Anúncio:</strong> ${data.DataInicio || "N/A"}</div>
+                `;
+            } catch (err) {
+                console.error(err);
+                resultado.innerHTML = `<span style="color:red;">Erro: ${err.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
