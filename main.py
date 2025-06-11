@@ -1,18 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from scraper import scrape_mercado_livre
-import os
 
 app = FastAPI()
 
-# Servir arquivos estáticos do frontend (HTML)
-app.mount("/", StaticFiles(directory="public", html=True), name="static")
-
-# Rota de scraping
-@app.get("/scrape/")
-def scrape_product(url: str):
+# 1️⃣ Rota da API de scraping
+:contentReference[oaicite:1]{index=1}
+:contentReference[oaicite:2]{index=2}
     try:
-        data = scrape_mercado_livre(url)
-        return data
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        :contentReference[oaicite:3]{index=3}
+    :contentReference[oaicite:4]{index=4}
+        :contentReference[oaicite:5]{index=5}
+
+# 2️⃣ Monta os arquivos estáticos somente após definir as rotas
+:contentReference[oaicite:6]{index=6}
+
