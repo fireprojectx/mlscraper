@@ -36,3 +36,4 @@ def extrair_dados_produto(url):
         "Vendidos": vendidos,
         "DataInicio": starttime  # ajuste de key mais amigável para JS
     }
+
